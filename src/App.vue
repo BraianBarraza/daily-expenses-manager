@@ -3,6 +3,9 @@ import {ref, reactive} from "vue";
 import Budget from "./components/Budget.vue";
 import BudgetControl from "./components/BudgetControl.vue";
 import Modal from "./components/Modal.vue";
+import Expense from "./components/Expense.vue";
+
+import {generateId} from "./helpers/index.js";
 
 import iconNewExpense from './assets/img/nuevo-gasto.svg'
 
@@ -13,6 +16,16 @@ const modal = reactive({
 
 const budget = ref(0)
 const available = ref(0)
+
+const expense = reactive({
+  name:'',
+  quantity: '',
+  category: '',
+  id: null,
+  date: Date.now(),
+})
+
+const expenses = ref([])
 
 const defineBudget = (quantity) => {
   budget.value = quantity
@@ -30,6 +43,23 @@ const hideModal = () => {
   setTimeout(()=>{
     modal.show = false
   },300)
+}
+
+const saveNewExpense = ()=>{
+  expenses.value.push({
+    ...expense,
+    id:generateId()
+  })
+
+  hideModal()
+  //empty fields
+  Object.assign(expense,{
+    name:'',
+    quantity: '',
+    category: '',
+    id: null,
+    date: Date.now(),
+  })
 }
 </script>
 
@@ -54,7 +84,20 @@ const hideModal = () => {
     </header>
 
     <main v-if="budget > 0">
-      <div class="new-expense">
+
+      <div class="expenses-list container">
+
+        <h2>{{expenses.length > 0 ? 'My Expenses.' : 'There are no Expenses.' }}</h2>
+
+        <Expense
+          v-for="expense in expenses"
+          :key="expense.id"
+          :expense="expense"
+        />
+
+      </div>
+
+      <div class="create-expense">
         <img :src="iconNewExpense" alt="New Expense Icon"
              @click="showModal">
       </div>
@@ -62,8 +105,14 @@ const hideModal = () => {
       <Modal
       v-if="modal.show"
       @hide-modal = "hideModal"
+      @save-new-expense = "saveNewExpense"
       :modal="modal"
+      v-model:name="expense.name"
+      v-model:quantity="expense.quantity"
+      v-model:category="expense.category"
       />
+<!--      v-model:id="expense.id"-->
+<!--      v-model:date="expense.date"-->
     </main>
   </div>
 
@@ -136,15 +185,24 @@ header h1 {
 
 }
 
-.new-expense {
+.create-expense {
   position: fixed;
   bottom: 5rem;
   right: 5rem;
 }
 
-.new-expense img {
+.create-expense img {
   width: 5rem;
   cursor: pointer;
+}
+
+.expenses-list {
+  margin-top: 10rem;
+}
+
+.expenses-list h2 {
+  font-weight: 900;
+  color: var(--dark-grey);
 }
 
 </style>
