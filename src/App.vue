@@ -1,12 +1,11 @@
 <script setup>
-import {ref, reactive} from "vue";
+import {ref, reactive, watch} from "vue";
 import Budget from "./components/Budget.vue";
 import BudgetControl from "./components/BudgetControl.vue";
 import Modal from "./components/Modal.vue";
 import Expense from "./components/Expense.vue";
 
 import {generateId} from "./helpers/index.js";
-
 import iconNewExpense from './assets/img/nuevo-gasto.svg'
 
 const modal = reactive({
@@ -16,9 +15,10 @@ const modal = reactive({
 
 const budget = ref(0)
 const available = ref(0)
+const spent = ref(0)
 
 const expense = reactive({
-  name:'',
+  name: '',
   quantity: '',
   category: '',
   id: null,
@@ -27,6 +27,15 @@ const expense = reactive({
 
 const expenses = ref([])
 
+watch(expenses, () => {
+  const totalSpent = expenses.value.reduce((total, expense) => expense.quantity + total, 0)
+  spent.value = totalSpent
+
+  available.value = budget.value - totalSpent
+}, {
+  deep: true
+})
+
 const defineBudget = (quantity) => {
   budget.value = quantity
   available.value = quantity
@@ -34,27 +43,27 @@ const defineBudget = (quantity) => {
 
 const showModal = () => {
   modal.show = true
-  setTimeout(()=>{
-  modal.animate = true
-  },300)
+  setTimeout(() => {
+    modal.animate = true
+  }, 300)
 }
 const hideModal = () => {
-    modal.animate = false
-  setTimeout(()=>{
+  modal.animate = false
+  setTimeout(() => {
     modal.show = false
-  },300)
+  }, 300)
 }
 
-const saveNewExpense = ()=>{
+const saveNewExpense = () => {
   expenses.value.push({
     ...expense,
-    id:generateId()
+    id: generateId()
   })
 
   hideModal()
   //empty fields
-  Object.assign(expense,{
-    name:'',
+  Object.assign(expense, {
+    name: '',
     quantity: '',
     category: '',
     id: null,
@@ -64,7 +73,9 @@ const saveNewExpense = ()=>{
 </script>
 
 <template>
-  <div>
+  <div
+      :class="{fix: modal.show}"
+  >
     <header>
       <h1>Daily Expenses Manager</h1>
       <div class="header-container container shadow">
@@ -76,6 +87,7 @@ const saveNewExpense = ()=>{
             v-else
             :budget="budget"
             :available="available"
+            :spent="spent"
         />
 
 
@@ -87,12 +99,12 @@ const saveNewExpense = ()=>{
 
       <div class="expenses-list container">
 
-        <h2>{{expenses.length > 0 ? 'My Expenses.' : 'There are no Expenses.' }}</h2>
+        <h2>{{ expenses.length > 0 ? 'My Expenses.' : 'There are no Expenses.' }}</h2>
 
         <Expense
-          v-for="expense in expenses"
-          :key="expense.id"
-          :expense="expense"
+            v-for="expense in expenses"
+            :key="expense.id"
+            :expense="expense"
         />
 
       </div>
@@ -103,16 +115,16 @@ const saveNewExpense = ()=>{
       </div>
 
       <Modal
-      v-if="modal.show"
-      @hide-modal = "hideModal"
-      @save-new-expense = "saveNewExpense"
-      :modal="modal"
-      v-model:name="expense.name"
-      v-model:quantity="expense.quantity"
-      v-model:category="expense.category"
+          v-if="modal.show"
+          @hide-modal="hideModal"
+          @save-new-expense="saveNewExpense"
+          :modal="modal"
+          v-model:name="expense.name"
+          v-model:quantity="expense.quantity"
+          v-model:category="expense.category"
       />
-<!--      v-model:id="expense.id"-->
-<!--      v-model:date="expense.date"-->
+      <!--      v-model:id="expense.id"-->
+      <!--      v-model:date="expense.date"-->
     </main>
   </div>
 
@@ -151,6 +163,11 @@ h1 {
 
 h2 {
   font-size: 3rem;
+}
+
+.fix {
+  overflow: hidden;
+  height: 100vh;
 }
 
 header {

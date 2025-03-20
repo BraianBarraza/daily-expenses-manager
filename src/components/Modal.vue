@@ -93,12 +93,14 @@ const addNewExpense = () =>{
 
                   :value="category"
                   @input="$emit('update:category', $event.target.value)">
-            <option value="saving">Money Saving</option>
+
+            <option value="">-- Select --</option>
+            <option value="save">Money Saving</option>
             <option value="food">Food</option>
             <option value="home">Home</option>
             <option value="health">Health</option>
             <option value="entertainment">Entertainment</option>
-            <option value="clothe">Clothe</option>
+            <option value="clothes">Clothes</option>
             <option value="subscriptions">Subscriptions</option>
             <option value="others">Others</option>
           </select>
