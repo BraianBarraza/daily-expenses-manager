@@ -1,44 +1,49 @@
 <script setup>
 import {ref} from "vue";
 import closeModal from '../assets/img/cerrar.svg'
-import Alert  from "./Alert.vue";
+import Alert from "./Alert.vue";
 
 const error = ref('')
-const emit = defineEmits(['hide-modal','save-new-expense', 'update:name', 'update:quantity', 'update:category'])
+const emit = defineEmits(['hide-modal', 'save-new-expense', 'update:name', 'update:quantity', 'update:category',
+  'delete-expense'])
 const props = defineProps({
-  modal:{
-    type:Object,
-    required:true
+  modal: {
+    type: Object,
+    required: true
   },
-  name:{
+  name: {
     type: String,
     required: true
   },
-  quantity:{
+  quantity: {
     type: [String, Number],
     required: true
   },
-  category:{
+  category: {
     type: String,
+    required: true
+  },
+  id: {
+    type: [String, null],
     required: true
   }
 })
 
-const addNewExpense = () =>{
+const addNewExpense = () => {
   //no empty fields validation
   const {name, quantity, category} = props
-  if ([name, quantity, category].includes("")){
+  if ([name, quantity, category].includes("")) {
     error.value = 'all fields must be filled'
-    setTimeout(()=>{
+    setTimeout(() => {
       error.value = ''
     }, 4000)
     return
   }
 
   //quantity validation
-  if ([quantity] <= 0 ){
+  if ([quantity] <= 0) {
     error.value = 'Please introduce a valid Quantity'
-    setTimeout(()=>{
+    setTimeout(() => {
       error.value = ''
     }, 4000)
     return;
@@ -48,7 +53,11 @@ const addNewExpense = () =>{
 
 }
 
-
+const isEditing = () =>{
+  if (id !== null){
+    true;
+  }
+}
 
 </script>
 
@@ -62,14 +71,14 @@ const addNewExpense = () =>{
     </div>
 
     <div class="container form-container"
-    :class="[modal.animate ? 'animate' : 'close']">
+         :class="[modal.animate ? 'animate' : 'close']">
       <form
           class="new-expense"
           @submit.prevent="addNewExpense"
       >
-        <legend>Add a new expense</legend>
+        <legend>{{ id ? 'Edit Expense: ' : 'Add a new expense' }}</legend>
 
-        <Alert v-if="error">{{error}}</Alert>
+        <Alert v-if="error">{{ error }}</Alert>
 
         <div class="field">
           <label for="name">Expense Name:</label>
@@ -77,7 +86,7 @@ const addNewExpense = () =>{
                  id="name"
                  placeholder="Add the Expense Name"
                  :value="name"
-                @input="$emit('update:name', $event.target.value)">
+                 @input="$emit('update:name', $event.target.value)">
         </div>
         <div class="field">
           <label for="Quantity">Expense Quantity:</label>
@@ -108,14 +117,22 @@ const addNewExpense = () =>{
 
         <input
             type="submit"
-            value="Add a new Expense"
+            :value="[isEditing ? 'Save changes' : 'Add a new expense']"
         />
 
 
       </form>
 
+      <button
+        type="button"
+        class="delete-btn"
+        v-if="isEditing"
+        @click="$emit('delete-expense')"
+      >
+        Delete Expense
+      </button>
+
     </div>
-    <h1>modal</h1>
   </div>
 </template>
 
@@ -161,16 +178,19 @@ const addNewExpense = () =>{
   display: grid;
   gap: 2rem;
 }
+
 .new-expense legend {
   text-align: center;
   color: var(--white);
   font-size: 3rem;
   font-weight: 700;
 }
+
 .field {
   display: grid;
   gap: 2rem;
 }
+
 .new-expense input,
 .new-expense select {
   background-color: var(--soft-grey);
@@ -179,10 +199,12 @@ const addNewExpense = () =>{
   border: none;
   font-size: 2.2rem;
 }
+
 .new-expense label {
   color: var(--white);
   font-size: 3rem;
 }
+
 .new-expense input[type="submit"] {
   background-color: var(--blue);
   color: var(--white);

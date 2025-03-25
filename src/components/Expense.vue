@@ -26,6 +26,8 @@ const props = defineProps({
     required: true
   }
 })
+
+defineEmits(['select-expense'])
 </script>
 
 <template>
@@ -39,7 +41,12 @@ const props = defineProps({
 
       <div class="details">
         <p class="category">{{ expense.category }}</p>
-        <p class="name">{{ expense.name }}</p>
+        <p
+            class="name"
+            @click="$emit('select-expense', expense.id)"
+        >
+          {{ expense.name }}
+        </p>
 
         <p class="date">{{ dateFormatter(expense.date) }}</p>
       </div>

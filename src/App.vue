@@ -1,9 +1,10 @@
 <script setup>
-import {ref, reactive, watch} from "vue";
+import {ref, reactive, watch, computed, onMounted} from "vue";
 import Budget from "./components/Budget.vue";
 import BudgetControl from "./components/BudgetControl.vue";
 import Modal from "./components/Modal.vue";
 import Expense from "./components/Expense.vue";
+import Filters from "./components/Filters.vue";
 
 import {generateId} from "./helpers/index.js";
 import iconNewExpense from './assets/img/nuevo-gasto.svg'
@@ -16,6 +17,7 @@ const modal = reactive({
 const budget = ref(0)
 const available = ref(0)
 const spent = ref(0)
+const filter = ref('')
 
 const expense = reactive({
   name: '',
@@ -30,10 +32,36 @@ const expenses = ref([])
 watch(expenses, () => {
   const totalSpent = expenses.value.reduce((total, expense) => expense.quantity + total, 0)
   spent.value = totalSpent
-
   available.value = budget.value - totalSpent
+
+  localStorage.setItem('expenses', JSON.stringify(expenses.value))
 }, {
   deep: true
+})
+
+watch(modal, () => {
+  if (!modal.show) {
+    restartExpenseState()
+  }
+}, {
+  deep: true
+})
+
+watch(budget, ()=>{
+  localStorage.setItem('budget', budget.value)
+})
+
+onMounted(() => {
+  const storageBudget = localStorage.getItem('budget')
+  if (storageBudget){
+    budget.value = Number(storageBudget)
+    available.value = Number(storageBudget)
+  }
+
+  const expensesStorage = localStorage.getItem('expenses')
+  if (expensesStorage){
+    expense.valueOf(JSON.parse(expensesStorage))
+  }
 })
 
 const defineBudget = (quantity) => {
@@ -55,12 +83,24 @@ const hideModal = () => {
 }
 
 const saveNewExpense = () => {
-  expenses.value.push({
-    ...expense,
-    id: generateId()
-  })
+  if (expense.id === null) {
+    expenses.value.push({
+      ...expense,
+      id: generateId()
+    })
+  } else {
+    const index = expenses.value.findIndex(item => item.id === expense.id)
+    if (index !== -1) {
+      expenses.value[index] = {...expense}
+    }
+  }
 
   hideModal()
+
+  restartExpenseState()
+}
+
+const restartExpenseState = () => {
   //empty fields
   Object.assign(expense, {
     name: '',
@@ -70,6 +110,30 @@ const saveNewExpense = () => {
     date: Date.now(),
   })
 }
+
+const selectExpense = id => {
+  const editExpense = expenses.value.filter(expense => expense.id === id)[0]
+  Object.assign(expense, editExpense)
+  showModal()
+}
+
+const deleteExpense = () =>{
+  if (confirm('Do you want to delete "' + expense.name + '"?')){
+  expenses.value = expenses.value.filter(expenseSate => expenseSate.id !== expense.id)
+  hideModal()
+  }
+}
+
+const resetBudget = () =>{
+  expenses.value = []
+}
+
+const filterExpenses = computed(()=>{
+  if (filter.value){
+    return expenses.value.filter(expense => expense.category === filter.value)
+  }
+  return expenses.value
+})
 </script>
 
 <template>
@@ -97,14 +161,21 @@ const saveNewExpense = () => {
 
     <main v-if="budget > 0">
 
+      <Filters
+          v-model:filter="filter"
+      />
+
       <div class="expenses-list container">
 
-        <h2>{{ expenses.length > 0 ? 'My Expenses.' : 'There are no Expenses.' }}</h2>
+        <h2>{{ filterExpenses.length > 0 ? 'My Expenses.' : 'There are no Expenses.' }}</h2>
 
         <Expense
-            v-for="expense in expenses"
+            v-for="expense in filterExpenses"
             :key="expense.id"
             :expense="expense"
+            @select-expense="selectExpense"
+            @reset-budget="resetBudget"
+
         />
 
       </div>
@@ -118,10 +189,12 @@ const saveNewExpense = () => {
           v-if="modal.show"
           @hide-modal="hideModal"
           @save-new-expense="saveNewExpense"
+          @delete-expense="deleteExpense"
           :modal="modal"
           v-model:name="expense.name"
           v-model:quantity="expense.quantity"
           v-model:category="expense.category"
+          v-model:id="expense.id"
       />
       <!--      v-model:id="expense.id"-->
       <!--      v-model:date="expense.date"-->

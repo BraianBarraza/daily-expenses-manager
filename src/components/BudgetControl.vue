@@ -18,6 +18,8 @@ const props = defineProps({
 
 })
 
+defineEmits(['reset-budget'])
+
 </script>
 
 <template>
@@ -30,7 +32,10 @@ const props = defineProps({
     </div>
 
     <div class="budget-container">
-      <button class="reset-app">
+      <button
+          class="reset-app"
+          @click="$event=> $emit('resetBudget')"
+      >
         Reset Budget
       </button>
       <p>
@@ -38,7 +43,7 @@ const props = defineProps({
         {{ formatQuantity(budget) }}
       </p>
 
-      <p>
+      <p :style="[available > 0 ? {'color':'green'} : {'color':'red', 'font-weight': 'bold'}]">
         <span>Available Budget:
         </span>
         {{ formatQuantity(available) }}
