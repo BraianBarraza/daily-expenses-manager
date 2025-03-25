@@ -7,7 +7,7 @@ import Expense from "./components/Expense.vue";
 import Filters from "./components/Filters.vue";
 
 import {generateId} from "./helpers/index.js";
-import iconNewExpense from './assets/img/nuevo-gasto.svg'
+import iconNewExpense from './assets/img/new_expense.svg'
 
 const modal = reactive({
   show: false,

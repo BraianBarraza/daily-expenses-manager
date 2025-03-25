@@ -1,8 +1,10 @@
 <script setup>
-import {reactive} from 'vue'
-import image from '../assets/img/grafico.jpg'
+import {reactive, computed} from 'vue'
 import {formatQuantity} from '../helpers'
 import BudgetModal from './BudgetModal.vue'
+
+import "vue3-circle-progress/dist/circle-progress.css";
+import CircleProgress from "vue3-circle-progress";
 
 const props = defineProps({
   budget: {
@@ -43,13 +45,25 @@ const hideBudgetModal = () => {
 const updateBudget = (newBudget) => {
   emit('modify-budget', newBudget)
 }
+
+const percentage = computed(() => {
+  return parseInt(((props.budget - props.available) / props.budget) * 100)
+})
 </script>
 
 <template>
   <div class="two-columns">
     <div class="graphic-container">
-      <img :src="image"
-           alt=""
+      <p class="percentage" :style="[percentage > 100 ? {'color':'red'} : {'color':'green'}]">
+        {{percentage}}%
+      </p>
+      <CircleProgress
+          :percent="percentage"
+          :size="250"
+          :border-width="30"
+          :border-bg-width="30"
+          fill-color="#3b82f6"
+          empty-color="#e1e1e1"
       />
     </div>
 
@@ -113,7 +127,6 @@ const updateBudget = (newBudget) => {
   z-index: 100;
   font-size: 3rem;
   font-weight: 900;
-  color: var(--dark-grey);
 }
 
 .two-columns {

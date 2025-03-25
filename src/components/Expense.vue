@@ -2,13 +2,13 @@
 import {formatQuantity} from "../helpers/index.js";
 import {dateFormatter} from "../helpers/index.js";
 
-import saveIcon from '../assets/img/icono_ahorro.svg'
-import homeIcon from '../assets/img/icono_casa.svg'
-import foodIcon from '../assets/img/icono_comida.svg'
-import expensesIcon from '../assets/img/icono_gastos.svg'
-import entertainmentIcon from '../assets/img/icono_ocio.svg'
-import healthIcon from '../assets/img/icono_salud.svg'
-import subscriptionsIcon from '../assets/img/icono_suscripciones.svg'
+import saveIcon from '../assets/img/save_icon.svg'
+import homeIcon from '../assets/img/home_icon.svg'
+import foodIcon from '../assets/img/food_icon.svg'
+import expensesIcon from '../assets/img/expenses_icon.svg'
+import entertainmentIcon from '../assets/img/entertainment_icon.svg'
+import healthIcon from '../assets/img/health_icon.svg'
+import subscriptionsIcon from '../assets/img/subscriptions-icon.svg'
 
 const dictionaryIcons = {
   save: saveIcon,
