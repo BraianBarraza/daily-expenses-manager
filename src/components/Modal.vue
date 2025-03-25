@@ -53,11 +53,7 @@ const addNewExpense = () => {
 
 }
 
-const isEditing = () =>{
-  if (id !== null){
-    true;
-  }
-}
+const isEditing = () => props.id !== null
 
 </script>
 
@@ -76,7 +72,7 @@ const isEditing = () =>{
           class="new-expense"
           @submit.prevent="addNewExpense"
       >
-        <legend>{{ id ? 'Edit Expense: ' : 'Add a new expense' }}</legend>
+        <legend>{{ isEditing() ? 'Edit Expense: ' : 'Add a new expense' }}</legend>
 
         <Alert v-if="error">{{ error }}</Alert>
 
@@ -117,7 +113,7 @@ const isEditing = () =>{
 
         <input
             type="submit"
-            :value="[isEditing ? 'Save changes' : 'Add a new expense']"
+            :value="[isEditing() ? 'Save changes' : 'Add a new expense']"
         />
 
 
@@ -126,7 +122,7 @@ const isEditing = () =>{
       <button
         type="button"
         class="delete-btn"
-        v-if="isEditing"
+        v-if="isEditing()"
         @click="$emit('delete-expense')"
       >
         Delete Expense

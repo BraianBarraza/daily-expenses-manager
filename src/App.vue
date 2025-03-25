@@ -47,20 +47,20 @@ watch(modal, () => {
   deep: true
 })
 
-watch(budget, ()=>{
+watch(budget, () => {
   localStorage.setItem('budget', budget.value)
 })
 
 onMounted(() => {
   const storageBudget = localStorage.getItem('budget')
-  if (storageBudget){
+  if (storageBudget) {
     budget.value = Number(storageBudget)
     available.value = Number(storageBudget)
   }
 
   const expensesStorage = localStorage.getItem('expenses')
-  if (expensesStorage){
-    expense.valueOf(JSON.parse(expensesStorage))
+  if (expensesStorage) {
+    expenses.value = JSON.parse(expensesStorage)
   }
 })
 
@@ -117,19 +117,27 @@ const selectExpense = id => {
   showModal()
 }
 
-const deleteExpense = () =>{
-  if (confirm('Do you want to delete "' + expense.name + '"?')){
-  expenses.value = expenses.value.filter(expenseSate => expenseSate.id !== expense.id)
-  hideModal()
+const deleteExpense = () => {
+  if (confirm('Do you want to delete "' + expense.name + '"?')) {
+    expenses.value = expenses.value.filter(expenseSate => expenseSate.id !== expense.id)
+    hideModal()
   }
 }
 
-const resetBudget = () =>{
-  expenses.value = []
+const modifyBudget = (newBudget) =>{
+  budget.value = newBudget
+  available.value = newBudget - spent.value
 }
 
-const filterExpenses = computed(()=>{
-  if (filter.value){
+const resetApp = () => {
+  if (confirm('Sure you want to reset all the values?')){
+    budget.value = 0
+    expenses.value = []
+  }
+}
+
+const filterExpenses = computed(() => {
+  if (filter.value) {
     return expenses.value.filter(expense => expense.category === filter.value)
   }
   return expenses.value
@@ -152,6 +160,8 @@ const filterExpenses = computed(()=>{
             :budget="budget"
             :available="available"
             :spent="spent"
+            @modify-budget = "modifyBudget"
+            @reset-app="resetApp"
         />
 
 
@@ -174,8 +184,6 @@ const filterExpenses = computed(()=>{
             :key="expense.id"
             :expense="expense"
             @select-expense="selectExpense"
-            @reset-budget="resetBudget"
-
         />
 
       </div>
@@ -196,8 +204,6 @@ const filterExpenses = computed(()=>{
           v-model:category="expense.category"
           v-model:id="expense.id"
       />
-      <!--      v-model:id="expense.id"-->
-      <!--      v-model:date="expense.date"-->
     </main>
   </div>
 

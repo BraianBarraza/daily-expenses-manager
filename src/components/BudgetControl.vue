@@ -1,25 +1,48 @@
 <script setup>
+import {reactive} from 'vue'
 import image from '../assets/img/grafico.jpg'
-import {formatQuantity} from "../helpers"
+import {formatQuantity} from '../helpers'
+import BudgetModal from './BudgetModal.vue'
 
 const props = defineProps({
   budget: {
     type: Number,
-    required: true,
+    required: true
   },
   available: {
     type: Number,
-    required: true,
+    required: true
   },
   spent: {
     type: Number,
-    required: true,
+    required: true
   }
-
 })
 
-defineEmits(['reset-budget'])
+const emit = defineEmits(['reset-app', 'modify-budget'])
 
+const budgetModal = reactive({
+  show: false,
+  animate: false
+})
+
+const showBudgetModal = () => {
+  budgetModal.show = true
+  setTimeout(() => {
+    budgetModal.animate = true
+  }, 300)
+}
+
+const hideBudgetModal = () => {
+  budgetModal.animate = false
+  setTimeout(() => {
+    budgetModal.show = false
+  }, 300)
+}
+
+const updateBudget = (newBudget) => {
+  emit('modify-budget', newBudget)
+}
 </script>
 
 <template>
@@ -28,22 +51,30 @@ defineEmits(['reset-budget'])
       <img :src="image"
            alt=""
       />
-
     </div>
 
     <div class="budget-container">
-      <button
-          class="reset-app"
-          @click="$event=> $emit('resetBudget')"
-      >
-        Reset Budget
-      </button>
+      <div class="two-columns">
+        <button
+            class="reset-app"
+            @click="showBudgetModal"
+        >
+          Modify Budget
+        </button>
+
+        <button
+            class="reset-app"
+            @click="$event=> $emit('reset-app')"
+        >
+          Reset App
+        </button>
+      </div>
       <p>
         <span>Total Budget:</span>
         {{ formatQuantity(budget) }}
       </p>
 
-      <p :style="[available > 0 ? {'color':'green'} : {'color':'red', 'font-weight': 'bold'}]">
+      <p :style="[available > 0 ? {'color':'green', 'font-weight': 'bold'} : {'color':'red', 'font-weight': 'bold'}]">
         <span>Available Budget:
         </span>
         {{ formatQuantity(available) }}
@@ -52,10 +83,18 @@ defineEmits(['reset-budget'])
       <p>
         <span>Spent Budget:
         </span>
-        {{formatQuantity(spent)}}
+        {{ formatQuantity(spent) }}
       </p>
     </div>
   </div>
+
+  <BudgetModal
+      v-if="budgetModal.show"
+      :modal="budgetModal"
+      :currentBudget="budget"
+      @hide-modal="hideBudgetModal"
+      @update-budget="updateBudget"
+  />
 
 </template>
 
